@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>♣️QII 入会テスト — 知性診断</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Noto+Serif+JP:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8C97A;
+  --gold-pale: #F5E8C0;
+  --deep: #0A0A0F;
+  --dark: #12121A;
+  --mid: #1E1E2E;
+  --surface: #252535;
+  --text: #E8E4D8;
+  --text-muted: #8A8577;
+  --accent: #4A6FA5;
+  --success: #5A8A5A;
+  --fail: #8A4040;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--deep);
+  color: var(--text);
+  font-family: 'Noto Serif JP', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 20%, rgba(201,168,76,.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 80% 80%, rgba(74,111,165,.05) 0%, transparent 60%),
+    repeating-linear-gradient(45deg, transparent, transparent 60px, rgba(201,168,76,.015) 60px, rgba(201,168,76,.015) 61px);
+  pointer-events: none; z-index: 0;
+}
+
+.container { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; padding: 40px 24px; }
+
+header { text-align: center; padding: 60px 0 50px; }
+.logo-crest {
+  width: 80px; height: 80px; margin: 0 auto 28px;
+  border: 1.5px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 32px; color: var(--gold);
+  transform: rotate(45deg);
+  position: relative;
+}
+.logo-crest span { transform: rotate(-45deg); }
+.logo-crest::before {
+  content: '';
+  position: absolute; inset: 5px;
+  border: 1px solid rgba(201,168,76,.3);
+}
+
+header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(22px, 5vw, 36px);
+  font-weight: 300;
+  letter-spacing: .3em;
+  color: var(--gold-light);
+  margin-bottom: 12px;
+}
+header .subtitle {
+  font-size: 12px;
+  letter-spacing: .25em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.gold-rule {
+  width: 120px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 28px auto;
+}
+
+.screen { display: none; animation: fadeIn .6s ease; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(16px) } to { opacity:1; transform:translateY(0) } }
+
+.intro-card {
+  background: var(--mid);
+  border: 1px solid rgba(201,168,76,.25);
+  padding: 40px;
+  text-align: center;
+}
+.intro-card p {
+  line-height: 2;
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+.intro-card .emphasis {
+  font-size: 13px;
+  letter-spacing: .1em;
+  color: var(--gold-pale);
+  border: 1px solid rgba(201,168,76,.2);
+  padding: 12px 20px;
+  margin: 24px 0;
+  display: inline-block;
+}
+
+/* X アカウント表示バッジ */
+.x-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(201,168,76,.08);
+  border: 1px solid rgba(201,168,76,.3);
+  padding: 8px 18px;
+  font-size: 13px;
+  color: var(--gold-pale);
+  margin-bottom: 20px;
+}
+.x-badge .x-icon { font-size: 15px; }
+
+/* 送信中オーバーレイ */
+.sending-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10,10,15,.85);
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 200;
+  flex-direction: column; gap: 16px;
+}
+.sending-overlay.show { display: flex; }
+.sending-spinner {
+  width: 40px; height: 40px;
+  border: 2px solid rgba(201,168,76,.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.sending-text { font-size: 13px; letter-spacing: .2em; color: var(--text-muted); }
+
+/* 送信結果トースト */
+.toast {
+  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid rgba(201,168,76,.3);
+  padding: 12px 24px;
+  font-size: 13px;
+  color: var(--gold-pale);
+  opacity: 0;
+  transition: opacity .4s ease;
+  z-index: 300;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+.progress-bar { background: var(--surface); height: 3px; margin-bottom: 36px; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  transition: width .5s cubic-bezier(.4,0,.2,1);
+}
+.progress-label { font-size: 11px; letter-spacing: .2em; color: var(--text-muted); text-align: right; margin-bottom: 8px; }
+
+.question-card {
+  background: var(--mid);
+  border: 1px solid rgba(201,168,76,.2);
+  padding: 36px 40px;
+  margin-bottom: 24px;
+}
+.question-category { font-size: 10px; letter-spacing: .3em; color: var(--gold); text-transform: uppercase; margin-bottom: 18px; }
+.question-text { font-size: 17px; line-height: 1.9; font-weight: 400; color: var(--text); margin-bottom: 28px; white-space: pre-wrap; }
+
+.options { display: grid; gap: 10px; }
+.option-btn {
+  background: var(--surface);
+  border: 1px solid rgba(201,168,76,.15);
+  color: var(--text);
+  padding: 16px 22px;
+  text-align: left;
+  cursor: pointer;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px;
+  line-height: 1.6;
+  transition: all .25s ease;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.option-btn:hover { background: rgba(201,168,76,.08); border-color: rgba(201,168,76,.4); color: var(--gold-pale); transform: translateX(4px); }
+.option-btn.selected { background: rgba(201,168,76,.12); border-color: var(--gold); color: var(--gold-light); }
+.option-btn .label { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--gold); min-width: 22px; line-height: 1.3; }
+
+.nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; gap: 16px; }
+.btn {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px;
+  letter-spacing: .2em;
+  padding: 14px 32px;
+  cursor: pointer;
+  transition: all .25s ease;
+  text-transform: uppercase;
+}
+.btn-primary { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%); color: var(--deep); border: none; font-weight: 600; }
+.btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+.btn-outline { background: transparent; border: 1px solid rgba(201,168,76,.4); color: var(--text-muted); }
+.btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+.result-screen { text-align: center; padding: 20px 0; }
+.result-icon { width: 100px; height: 100px; margin: 0 auto 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+.result-icon.pass { background: radial-gradient(circle, rgba(90,138,90,.2), transparent); border: 2px solid #5A8A5A; }
+.result-icon.fail { background: radial-gradient(circle, rgba(138,64,64,.2), transparent); border: 2px solid #8A4040; }
+
+.result-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 6vw, 44px); font-weight: 300; letter-spacing: .2em; margin-bottom: 12px; }
+.result-title.pass { color: #7DC47D; }
+.result-title.fail { color: #C47D7D; }
+
+.result-iq { font-family: 'Cormorant Garamond', serif; font-size: 72px; font-weight: 300; color: var(--gold); line-height: 1; margin: 20px 0 8px; }
+.result-iq-label { font-size: 11px; letter-spacing: .3em; color: var(--text-muted); }
+
+.result-message { background: var(--mid); border: 1px solid rgba(201,168,76,.2); padding: 28px 36px; margin: 28px 0; font-size: 15px; line-height: 2; color: var(--text-muted); }
+
+.score-breakdown { display: flex; justify-content: center; gap: 32px; margin: 20px 0; }
+.score-item { text-align: center; }
+.score-num { font-family: 'Cormorant Garamond', serif; font-size: 32px; color: var(--gold); }
+.score-lbl { font-size: 10px; letter-spacing: .2em; color: var(--text-muted); }
+
+#certificate-container { margin: 28px auto 0; max-width: 600px; display: none; }
+canvas#certCanvas { width: 100%; border: 1px solid rgba(201,168,76,.3); display: block; }
+.cert-download-btn { margin-top: 14px; width: 100%; }
+
+.timer-row { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+.timer-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.countdown-overlay {
+  position: fixed; inset: 0;
+  background: var(--deep);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+  flex-direction: column; gap: 12px;
+}
+.countdown-num { font-family: 'Cormorant Garamond', serif; font-size: 120px; color: var(--gold); animation: countPop .9s ease; }
+@keyframes countPop { from{transform:scale(1.4);opacity:0} to{transform:scale(1);opacity:1} }
+.countdown-text { font-size: 13px; letter-spacing: .3em; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- 送信中オーバーレイ -->
+<div class="sending-overlay" id="sendingOverlay">
+  <div class="sending-spinner"></div>
+  <div class="sending-text">RECORDING YOUR RESULT...</div>
+</div>
+
+<!-- トースト -->
+<div class="toast" id="toast"></div>
+
+<!-- カウントダウン -->
+<div class="countdown-overlay" id="countdown" style="display:none">
+  <div class="countdown-num" id="cdNum">3</div>
+  <div class="countdown-text">TEST COMMENCING</div>
+</div>
+
+<div class="container">
+  <header>
+    <div class="logo-crest"><span>♣</span></div>
+    <h1>♣️QII 入会テスト</h1>
+    <div class="subtitle">Intelligence Admission Examination</div>
+    <div class="gold-rule"></div>
+  </header>
+
+  <!-- ── イントロ画面 ── -->
+  <div class="screen active" id="screen-intro">
+    <div class="intro-card">
+      <!-- X アカウントバッジ（URLパラメータがあれば表示） -->
+      <div id="xBadgeWrap" style="display:none;margin-bottom:16px">
+        <div class="x-badge">
+          <span class="x-icon">𝕏</span>
+          <span id="xBadgeText"></span>
+          <span style="color:var(--text-muted);font-size:11px">で受講</span>
+        </div>
+      </div>
+
+      <p>本テストは、<strong style="color:var(--gold-pale)">♣️QII 入会テスト</strong> の<br>知性適性診断テストです。</p>
+      <p>全 <strong style="color:var(--gold-pale)">15 問</strong>、論理・数列・言語・図形・空間認識にわたる多面的な設問で、あなたの知性を総合的に評価します。</p>
+      <div class="emphasis">判定基準：推定 IQ 110 以上で合格</div>
+      <p style="font-size:13px;color:var(--text-muted)">各問題は一度だけ回答できます。<br>落ち着いて、丁寧に取り組んでください。</p>
+      <div style="margin-top:32px">
+        <button class="btn btn-primary" onclick="startCountdown()">テストを開始する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── テスト画面 ── -->
+  <div class="screen" id="screen-test">
+    <div class="timer-row">
+      <div class="timer-dot"></div>
+      <span id="timerDisplay">00:00</span>
+      <span style="margin-left:auto;font-size:11px;letter-spacing:.15em">EXAMINATION IN PROGRESS</span>
+    </div>
+    <div class="progress-label" id="progressLabel">問題 1 / 15</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+    <div class="question-card">
+      <div class="question-category" id="qCategory">LOGICAL REASONING</div>
+      <div class="question-text" id="qText"></div>
+      <div class="options" id="optionsGrid"></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-outline" id="prevBtn" onclick="prevQ()" disabled>← 前へ</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQ()" disabled>次へ →</button>
+    </div>
+  </div>
+
+  <!-- ── 結果画面 ── -->
+  <div class="screen" id="screen-result">
+    <div class="result-screen">
+      <div class="result-icon" id="resultIcon"></div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="gold-rule"></div>
+      <div class="result-iq" id="resultIQ"></div>
+      <div class="result-iq-label">ESTIMATED IQ SCORE</div>
+      <div class="score-breakdown">
+        <div class="score-item">
+          <div class="score-num" id="scoreCorrect">0</div>
+          <div class="score-lbl">CORRECT</div>
+        </div>
+        <div class="score-item" style="color:var(--text-muted)">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:32px">/</div>
+        </div>
+        <div class="score-item">
+          <div class="score-num">15</div>
+          <div class="score-lbl">TOTAL</div>
+        </div>
+      </div>
+      <div class="result-message" id="resultMessage"></div>
+
+      <div id="certificate-container">
+        <canvas id="certCanvas" width="1200" height="800"></canvas>
+        <button class="btn btn-primary cert-download-btn" onclick="downloadCert()">合格証明書をダウンロード ↓</button>
+      </div>
+
+      <div style="margin-top:24px">
+        <button class="btn btn-outline" onclick="retake()">もう一度挑戦する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+//  ★ Google Apps Script の WebApp URL をここに貼る
+// ════════════════════════════════════════
+const GAS_URL = "YOUR_GAS_WEBAPP_URL_HERE";
+
+// ════════════════════════════════════════
+//  URL パラメータから X アカウント取得
+// ════════════════════════════════════════
+const urlParams = new URLSearchParams(window.location.search);
+let xAccountId = urlParams.get('x') || urlParams.get('X') || "";
+// @ が付いていない場合は付加
+if (xAccountId && !xAccountId.startsWith('@')) xAccountId = '@' + xAccountId;
+
+// イントロにバッジ表示
+if (xAccountId) {
+  document.getElementById('xBadgeWrap').style.display = 'block';
+  document.getElementById('xBadgeText').textContent = xAccountId;
+}
+
+// ════════════════════════════════════════
+//  問題データ (15問)
+// ════════════════════════════════════════
+const questions = [
+  {
+    category: "数列推論",
+    text: "次の数列の □ に入る数はどれか。\n\n2, 6, 18, 54, □",
+    options: ["108", "162", "216", "324"],
+    answer: 1,
+  },
+  {
+    category: "言語推論",
+    text: "「医師」と「病院」の関係と同じ関係になるものを選べ。\n\n教師 ：□",
+    options: ["生徒", "学校", "黒板", "授業"],
+    answer: 1,
+  },
+  {
+    category: "論理推論",
+    text: "A・B・C・D の4人が1列に並ぶ。以下の条件を満たす並び方は何通りか。\n\n・A は B より前に立つ\n・C は D より後に立つ",
+    options: ["4通り", "6通り", "8通り", "12通り"],
+    answer: 1,
+  },
+  {
+    category: "数的推論",
+    text: "ある商品を定価の 20% 引きで買い、さらにそこから 10% 引きのクーポンを使った。最終的な割引率は定価の何%か。",
+    options: ["28%", "30%", "32%", "35%"],
+    answer: 0,
+  },
+  {
+    category: "図形推論",
+    text: "正六角形の内角の和は何度か。",
+    options: ["540°", "600°", "720°", "900°"],
+    answer: 2,
+  },
+  {
+    category: "空間認識",
+    text: "1辺が 3cm の立方体を、1辺が 1cm の小立方体に切り分けた。表面が塗られている面を 1 面以上持つ小立方体は何個か。",
+    options: ["18個", "20個", "26個", "27個"],
+    answer: 2,
+  },
+  {
+    category: "数列推論",
+    text: "次の数列の □ に入る数はどれか。\n\n1, 1, 2, 3, 5, 8, □",
+    options: ["11", "12", "13", "14"],
+    answer: 2,
+  },
+  {
+    category: "言語推論",
+    text: "次のうち、残りの3つと性質が異なるものはどれか。",
+    options: ["彫刻", "絵画", "演奏", "建築"],
+    answer: 2,
+  },
+  {
+    category: "論理推論",
+    text: "「すべての鳥は飛べる」「ペンギンは鳥である」この2つの前提から論理的に導ける結論はどれか。",
+    options: [
+      "ペンギンは飛べる（前提が正しければ）",
+      "ペンギンは飛べない",
+      "一部の鳥は飛べない",
+      "ペンギンは鳥ではない"
+    ],
+    answer: 0,
+  },
+  {
+    category: "数的推論",
+    text: "時速 60km で 2 時間走り、その後時速 40km で 1 時間走った場合の、全行程の平均時速はどれか。",
+    options: ["48km/h", "50km/h", "52km/h", "53km/h"],
+    answer: 3,
+  },
+  {
+    category: "パターン認識",
+    text: "A=1, B=2, C=3 … Z=26 とする。\n「CAB」を数値に変換したとき、その合計は？",
+    options: ["4", "5", "6", "7"],
+    answer: 2,
+  },
+  {
+    category: "空間認識",
+    text: "正方形の紙を対角線で2回折り、角を 45° の三角形に切り取った。紙を広げると、穴の形は何か。",
+    options: ["三角形", "正方形", "六角形", "星型"],
+    answer: 1,
+  },
+  {
+    category: "論理推論",
+    text: "赤・青・黄のカードが各1枚ある。A・B・Cがそれぞれ1枚持つとき、\n・A は赤を持っていない\n・B は青を持っていない\n・C は赤も青も持っていない\n\nCが持っているカードは？",
+    options: ["赤", "青", "黄", "不明"],
+    answer: 2,
+  },
+  {
+    category: "数的推論",
+    text: "あるクラスの平均点は 70 点で生徒は 20 人。新たに 1 人が加わり、その生徒の点は 90 点だった。新しい平均点はおよそ何点か。",
+    options: ["70.5点", "70.9点", "71.0点", "71.5点"],
+    answer: 1,
+  },
+  {
+    category: "言語推論",
+    text: "次の文の □ に最も適切な語を入れよ。\n\n「彼の発言は事実に□しており、信頼できない。」",
+    options: ["合致", "反して", "即して", "基づいて"],
+    answer: 1,
+  },
+];
+
+// ════════════════════════════════════════
+//  状態
+// ════════════════════════════════════════
+let current = 0;
+let answers = new Array(15).fill(null);
+let timerInterval = null;
+let seconds = 0;
+let testStartTime = null;
+
+// ════════════════════════════════════════
+//  カウントダウン
+// ════════════════════════════════════════
+function startCountdown() {
+  document.getElementById('countdown').style.display = 'flex';
+  let n = 3;
+  document.getElementById('cdNum').textContent = n;
+  const iv = setInterval(() => {
+    n--;
+    if (n <= 0) {
+      clearInterval(iv);
+      document.getElementById('countdown').style.display = 'none';
+      showScreen('screen-test');
+      renderQuestion();
+      startTimer();
+    } else {
+      document.getElementById('cdNum').textContent = n;
+    }
+  }, 900);
+}
+
+// ════════════════════════════════════════
+//  タイマー
+// ════════════════════════════════════════
+function startTimer() {
+  testStartTime = new Date();
+  seconds = 0;
+  timerInterval = setInterval(() => {
+    seconds++;
+    const m = String(Math.floor(seconds/60)).padStart(2,'0');
+    const s = String(seconds%60).padStart(2,'0');
+    document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+// ════════════════════════════════════════
+//  問題レンダリング
+// ════════════════════════════════════════
+function renderQuestion() {
+  const q = questions[current];
+  document.getElementById('qCategory').textContent = q.category;
+  document.getElementById('qText').textContent = q.text;
+  document.getElementById('progressLabel').textContent = `問題 ${current+1} / 15`;
+  document.getElementById('progressFill').style.width = `${((current+1)/15)*100}%`;
+
+  const grid = document.getElementById('optionsGrid');
+  grid.innerHTML = '';
+  const labels = ['A', 'B', 'C', 'D'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn' + (answers[current] === i ? ' selected' : '');
+    btn.innerHTML = `<span class="label">${labels[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => selectOption(i);
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = answers[current] === null;
+  document.getElementById('nextBtn').textContent = current === 14 ? '結果を見る ✓' : '次へ →';
+}
+
+function selectOption(i) {
+  answers[current] = i;
+  renderQuestion();
+  document.getElementById('nextBtn').disabled = false;
+}
+
+function nextQ() {
+  if (current < 14) { current++; renderQuestion(); }
+  else showResult();
+}
+
+function prevQ() {
+  if (current > 0) { current--; renderQuestion(); }
+}
+
+// ════════════════════════════════════════
+//  結果 & スプレッドシート送信
+// ════════════════════════════════════════
+async function showResult() {
+  clearInterval(timerInterval);
+  let correct = 0;
+  questions.forEach((q, i) => { if (answers[i] === q.answer) correct++; });
+
+  let iq;
+  if (correct <= 5)       iq = 80 + Math.round(correct * 2.8);
+  else if (correct <= 8)  iq = 96 + Math.round((correct-6)*4.5);
+  else if (correct <= 11) iq = 109 + Math.round((correct-8)*3.5);
+  else                    iq = 120 + Math.round((correct-12)*6);
+
+  const pass = iq >= 110;
+
+  // UI 更新
+  document.getElementById('scoreCorrect').textContent = correct;
+  document.getElementById('resultIQ').textContent = iq;
+  document.getElementById('resultIcon').innerHTML = pass ? '🏆' : '📋';
+  document.getElementById('resultIcon').className = 'result-icon ' + (pass ? 'pass' : 'fail');
+  document.getElementById('resultTitle').className = 'result-title ' + (pass ? 'pass' : 'fail');
+  document.getElementById('resultTitle').textContent = pass ? '合　格' : '不　合　格';
+
+  if (pass) {
+    document.getElementById('resultMessage').innerHTML = `
+      おめでとうございます。あなたは <strong style="color:var(--gold-pale)">♣️QII 入会テスト</strong> に合格されました。<br><br>
+      推定 IQ ${iq} は当会が定める基準（IQ 110 以上）を満たしており、<br>
+      高い論理的思考力・言語能力・空間認識力が認められました。<br><br>
+      下記より合格証明書をダウンロードし、入会手続きにお役立てください。
+    `;
+    document.getElementById('certificate-container').style.display = 'block';
+    drawCertificate(iq, correct);
+  } else {
+    document.getElementById('resultMessage').innerHTML = `
+      今回は惜しくも合格基準に届きませんでした。<br><br>
+      推定 IQ ${iq}（正解数 ${correct}/15）でした。<br>
+      各設問に丁寧に向き合いながら、ぜひまた挑戦してみてください。<br><br>
+      <span style="font-size:13px;color:var(--text-muted)">知性は鍛えることができます。次回のご健闘をお祈り申し上げます。</span>
+    `;
+  }
+
+  showScreen('screen-result');
+
+  // ── Google スプレッドシートへ送信 ──
+  await sendToSheet({ iq, correct, pass });
+}
+
+// タイムスタンプ生成（日本時間）
+function getJSTTimestamp() {
+  const now = new Date();
+  const jst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const y = jst.getUTCFullYear();
+  const mo = String(jst.getUTCMonth()+1).padStart(2,'0');
+  const d = String(jst.getUTCDate()).padStart(2,'0');
+  const h = String(jst.getUTCHours()).padStart(2,'0');
+  const mi = String(jst.getUTCMinutes()).padStart(2,'0');
+  const s = String(jst.getUTCSeconds()).padStart(2,'0');
+  return `${y}/${mo}/${d} ${h}:${mi}:${s}`;
+}
+
+async function sendToSheet({ iq, correct, pass }) {
+  if (!GAS_URL || GAS_URL === "YOUR_GAS_WEBAPP_URL_HERE") {
+    showToast("⚠️ GAS URL が未設定です（管理者へご連絡ください）");
+    return;
+  }
+
+  const payload = {
+    timestamp: getJSTTimestamp(),
+    xAccount: xAccountId || "（未取得）",
+    result: pass ? "合格" : "不合格",
+    iq: iq,
+    correct: correct,
+    total: 15,
+  };
+
+  document.getElementById('sendingOverlay').classList.add('show');
+
+  try {
+    // GETリクエスト＋URLパラメータ方式（no-cors制約を回避）
+    const params = new URLSearchParams({
+      timestamp: payload.timestamp,
+      xAccount:  payload.xAccount,
+      result:    payload.result,
+      iq:        payload.iq,
+      correct:   payload.correct,
+      total:     payload.total,
+    });
+    await fetch(GAS_URL + "?" + params.toString(), {
+      method: "GET",
+      mode: "no-cors",
+    });
+    showToast("✅ 受講データを記録しました");
+  } catch (e) {
+    showToast("⚠️ データ送信に失敗しました（結果には影響しません）");
+  } finally {
+    document.getElementById('sendingOverlay').classList.remove('show');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// ════════════════════════════════════════
+//  合格証明書 Canvas 描画
+// ════════════════════════════════════════
+function drawCertificate(iq, correct) {
+  const canvas = document.getElementById('certCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  ctx.fillStyle = '#0E0E18';
+  ctx.fillRect(0,0,W,H);
+
+  ctx.strokeStyle = '#C9A84C';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(20,20,W-40,H-40);
+  ctx.strokeStyle = 'rgba(201,168,76,.3)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(34,34,W-68,H-68);
+
+  const corners = [[40,40],[W-40,40],[40,H-40],[W-40,H-40]];
+  corners.forEach(([x,y]) => {
+    ctx.save();
+    ctx.translate(x,y);
+    const dx = x<W/2?1:-1, dy = y<H/2?1:-1;
+    ctx.strokeStyle = '#C9A84C'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(dx*0,dy*18); ctx.lineTo(dx*0,dy*0); ctx.lineTo(dx*18,dy*0); ctx.stroke();
+    ctx.restore();
+  });
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#8A8577';
+  ctx.font = '600 18px Georgia';
+  ctx.fillText('♣️  Q I I', W/2, 110);
+
+  const grd = ctx.createLinearGradient(100,0,W-100,0);
+  grd.addColorStop(0,'transparent'); grd.addColorStop(.5,'#C9A84C'); grd.addColorStop(1,'transparent');
+  ctx.strokeStyle = grd; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(100,128); ctx.lineTo(W-100,128); ctx.stroke();
+
+  ctx.fillStyle = '#E8C97A';
+  ctx.font = 'italic 300 56px Georgia';
+  ctx.fillText('Certificate of Achievement', W/2, 210);
+
+  ctx.fillStyle = '#8A8577';
+  ctx.font = '16px Georgia';
+  ctx.fillText('QII  INTELLIGENCE  ADMISSION  EXAMINATION', W/2, 252);
+
+  ctx.beginPath(); ctx.moveTo(180,272); ctx.lineTo(W-180,272); ctx.stroke();
+
+  ctx.fillStyle = '#C9A84C';
+  ctx.font = '300 24px "Noto Serif JP", Georgia';
+  ctx.fillText('本証は、下記の者が ♣️QII 入会テストに合格したことを証明します。', W/2, 330);
+
+  // X アカウント
+  if (xAccountId) {
+    ctx.fillStyle = '#8A8577';
+    ctx.font = '18px Georgia';
+    ctx.fillText(`受講者：${xAccountId}`, W/2, 370);
+  }
+
+  ctx.fillStyle = '#E8E4D8';
+  ctx.font = '300 22px Georgia';
+  ctx.fillText('推定 IQ スコア', W/2, xAccountId ? 415 : 400);
+  ctx.fillStyle = '#C9A84C';
+  ctx.font = '300 100px Georgia';
+  ctx.fillText(String(iq), W/2, xAccountId ? 525 : 510);
+
+  ctx.fillStyle = '#8A8577';
+  ctx.font = '18px Georgia';
+  ctx.fillText(`正解数  ${correct} / 15 問`, W/2, xAccountId ? 573 : 558);
+
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+  ctx.fillStyle = '#8A8577';
+  ctx.font = '16px Georgia';
+  ctx.fillText(`発行日：${dateStr}`, W/2, 630);
+
+  ctx.beginPath(); ctx.moveTo(180,650); ctx.lineTo(W-180,650); ctx.stroke();
+
+  ctx.fillStyle = '#4A4A5A';
+  ctx.font = '13px Georgia';
+  ctx.fillText('♣️QII 入会テスト  |  Intelligence Admission Examination', W/2, 678);
+
+  ctx.fillStyle = '#C9A84C';
+  ctx.font = '18px Georgia';
+  ctx.fillText('✦', W/2-220, 650);
+  ctx.fillText('✦', W/2+220, 650);
+}
+
+function downloadCert() {
+  const canvas = document.getElementById('certCanvas');
+  const link = document.createElement('a');
+  link.download = 'QII_Certificate.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function retake() {
+  current = 0;
+  answers = new Array(15).fill(null);
+  seconds = 0;
+  testStartTime = null;
+  showScreen('screen-intro');
+}
+</script>
+</body>
+</html>
