@@ -1,2 +1,2 @@
-# ClubQII-
-ClubQIIの入会テスト用
+# clubqii-
+clubqiiの入会テスト用
